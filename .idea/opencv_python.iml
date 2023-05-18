@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/task" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap02" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap03" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Common" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap04" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/images" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap05" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/task/ex_Task" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap11" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap11/images" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap11/images/face" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/task/images" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/task/images/Haar_files" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/task/images/face" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/task/SSD_data" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap12" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap12/header" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap12/images" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap12/images/car" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap12/images/coin" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chap12/images/plate" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Last_Task" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Last_Task/face_img" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Last_Task/face_img/test" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Last_Task/face_img/train" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
