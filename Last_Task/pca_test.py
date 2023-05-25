@@ -11,12 +11,10 @@ def preprocessing(train_no):
     gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
     float_image = gray_image.astype(np.float32)
     normalized_image = float_image / 255
-
     return normalized_image
 
 def load_faces(num_images):
     data_set = []
-
     for i in range(num_images):
 
         image = preprocessing(i)
@@ -98,6 +96,59 @@ def graph_plot(sorted_eigenvalues):
     plt.grid(True)
     plt.show()
 
+# 고유 얼굴(eigenfaces) 생성
+def eigenfaces(selected_eigenvectors, train_diff):
+    eigen_faces = train_diff.T @ selected_eigenvectors
+    return eigen_faces
+
+
+# 고유 얼굴(eigenfaces) 출력 함수
+def show_eigenfaces(eigen_faces):
+    for i, face in enumerate(eigen_faces.T):
+        # 얼굴 데이터를 재구성하고 절대값 적용
+        reshaped_face = np.reshape(np.abs(face), (150, 120))
+
+        # 이미지를 0-255 범위로 정규화
+        scaled_face = cv2.normalize(reshaped_face, None, 0, 255, cv2.NORM_MINMAX)
+
+        cv2.imshow(f"Eigenface {i}", scaled_face)
+        cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def feature_vectors(eigenvectors, train_diff):
+    difference_vectors = []
+    for face_image in eigenvectors:
+        face_image = face_image.reshape(-1,1)
+        difference_vectors.append(eigenvectors @ face_image)
+
+    return np.array(difference_vectors)
+
+
+# test 처리하기 -----------------------------------
+def preprocessing_test(test_no):
+    fname = f"face_img/test/test{test_no:03d}.jpg"
+    image = cv2.imread(fname, cv2.IMREAD_COLOR)
+    resized_image = cv2.resize(image, (120, 150))
+    gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
+    float_image = gray_image.astype(np.float32)
+    normalized_image = float_image / 255
+    return normalized_image
+
+def load_faces_test(num_images):
+    data_set = []
+    for i in range(num_images):
+
+        image = preprocessing_test(i)
+
+        # cv2.imshow("image", image)
+
+        if image is not None:
+            flatten_image = image.flatten()
+            data_set.append(flatten_image)
+    return np.array(data_set)
+
+def project_onto_eigenspace(eigenvectors, matrix):
+    return np.dot(eigenvectors.T, matrix)
 
 train_faces = load_faces(310)
 print("train_faces.shape : ", train_faces.shape)
@@ -110,19 +161,6 @@ cv2.imshow("mean_image", train_facesAvg)
 
 train_diff = difference_vectors(train_faces, train_facesAvg)
 print("train_diff.shape : ",train_diff.shape)
-
-# flat_diff = flat_difference_vectors(train_diff)
-# print("flat_diff : ",flat_diff.shape)
-
-# -----------------------------------
-
-# reshaped_flattened_diff = np.reshape(flat_diff, (150, 120))
-# print("reshaped_flattened_diff : ",reshaped_flattened_diff.shape)
-
-# 평탄화된 차 영상 출력
-# cv2.imshow("Flattened Difference Vectors", reshaped_flattened_diff)
-
-# -----------------------------------
 
 
 cov_matrix = covariance_matrix(train_diff)
@@ -137,34 +175,38 @@ sorted_indices = np.argsort(eigenvalues)[::-1]
 sorted_eigenvalues = eigenvalues[sorted_indices]
 sorted_eigenvectors = eigenvectors[:, sorted_indices]
 
+# 그래프 출력
+graph_plot(sorted_eigenvalues)
+
+
 K = 0.95
 selected_eigenvalues_by_k, selected_eigenvectors_by_k =select_eigenvectors_by_k(sorted_eigenvalues, sorted_eigenvectors, K)
 print("selected_eigenvalues_by_k shape:", selected_eigenvalues_by_k.shape)
 print("selected_eigenvectors_by_k shape:", selected_eigenvectors_by_k.shape)
 
-graph_plot(sorted_eigenvalues)
+
+# 고유 얼굴 생성과 출력
+eigen_faces = eigenfaces(selected_eigenvectors_by_k, train_diff)
+print("eigen_faces : ", eigen_faces.shape)
+# show_eigenfaces(eigen_faces)
+
+trainVecs = feature_vectors(selected_eigenvectors_by_k, train_diff)
+print("trainVecs : ", trainVecs.shape)
+
+reduced_feature_vectors = np.dot(train_diff, eigen_faces)
+print("reduced_feature_vectors : ",reduced_feature_vectors.shape)
 
 
 
-# 차 영상 출력
-# show_difference_vectors(train_diff)
-
-
-# print(load_faces(200))
-
-# X = np.array(data)
-# X = np.float32(X)
-
-# 영상의 평균 벡터를 구합니다.
-# mean_vector = np.mean(X, axis=0)
-
-# 평균 벡터를 2차원 영상(n * m)으로 변환합니다.
-# mean_image = np.reshape(mean_vector, (120, 150))
+# test --------------
+# test_faces = load_faces_test(93)
+# print("test_faces : ",test_faces.shape)
 #
+# test_facesSub = difference_vectors(test_faces, train_facesAvg)
+# print("test_facesSub : ", test_facesSub.shape)
 #
-# cv2.imshow("Mean Image", mean_image)
-# print(mean_image)
-
+# testVecs = project_onto_eigenspace(selected_eigenvectors_by_k, test_facesSub)
+# print("testVecs : ", testVecs.shape)
 
 # 사용자가 키 입력을 기다립니다.
 cv2.waitKey(0)
