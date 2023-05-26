@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
 
 def preprocessing(train_no):
     fname = f"face_img/train/train{train_no:03d}.jpg"           # 310개의 train_xxx.jpg 라벨링하기
@@ -119,7 +121,79 @@ def calculate_feature_vectors(diff, V):
     feature_vectors = np.dot(diff, V)  # V.T를 직접 사용
     return feature_vectors
 
+# test 단계 --------------------------------------------
 
+def preprocessing_test(test_no):
+    fname = f"face_img/test/test{test_no:03d}.jpg"           # 310개의 train_xxx.jpg 라벨링하기
+    image = cv2.imread(fname, cv2.IMREAD_COLOR)                 # 컬러 모드로 이미지 파일 읽기
+    resized_image = cv2.resize(image, (120, 150))               # 120x150 사이즈로 픽셀 조정
+    gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)# 그레이 스케일로 변환
+    float_image = gray_image.astype(np.float32)                 # 데이터 유형을 float32로 변환
+    normalized_image = float_image / 255                        # 픽셀 값을 나누어 정규화
+    return normalized_image
+
+def create_test_data(num_images):
+    test_data = np.empty((num_images, 18000))  # 미리 (num_images, 18000) 크기의 빈 배열 생성
+
+    for test_no in range(num_images):
+        preprocessed_image = preprocessing_test(test_no)
+        image_vector = preprocessed_image.flatten()     # 120x150 영상을 18000x1로 변환
+        test_data[test_no] = image_vector
+
+    return test_data
+
+def display_image(img):
+    img_with_label = np.reshape(img, (150, 120))
+    cv2.imshow("display_image",img_with_label)
+
+def euclidean_distance(v1, v2):
+    return np.sqrt(np.sum((v1 - v2) ** 2))
+def find_closest_train_image(test_feature_vector, train_feature_vectors):
+    min_distance = float('inf')
+    closest_image_idx = None
+
+    for i, feature_vector in enumerate(train_feature_vectors):
+        dist = euclidean_distance(feature_vector, test_feature_vector)
+        if dist < min_distance:
+            min_distance = dist
+            closest_image_idx = i
+
+    return closest_image_idx, min_distance
+
+def show_labeled_image(image, label, window_name='Image'):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1
+    font_color = (255, 255, 255)
+    img_with_label = np.reshape(image, (150, 120))
+    print("image.shape : ", img_with_label.shape)
+
+    cv2.putText(img_with_label, label, (10, 40), font, font_scale, font_color, 2, cv2.LINE_AA)
+    cv2.imshow(window_name, img_with_label)
+    cv2.waitKey(0)
+
+def display_test_result(test_number, test_image, recognized_face, test_label, recognized_label):
+    show_labeled_image(test_image, test_label, 'Test #' + str(test_number))
+    show_labeled_image(recognized_face, recognized_label, 'Train')
+
+def show_side_by_side(left_img, right_img, left_label, right_label, window_name='Result'):
+    left_reshape_img = np.reshape(left_img, (150, 120))
+    right_reshape_img = np.reshape(right_img, (150, 120))
+
+    # 두 이미지를 가로로 연결
+    combined_img = np.hstack((left_reshape_img, right_reshape_img))
+
+    # 각 이미지에 레이블을 추가
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.5
+    font_color = (255, 255, 255)
+
+    cv2.putText(combined_img, left_label, (10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
+    cv2.putText(combined_img, right_label, (120 + 10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
+
+    # 연결된 이미지를 출력
+    cv2.imshow(window_name, combined_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 def main():
     print("train start")
@@ -178,8 +252,39 @@ def main():
     feature_vectors = calculate_feature_vectors(differences, V)
     print("Feature Vectors shape:", feature_vectors.shape)
 
+    print("train end")
+    print("")
 
+    # test 단계 --------------------------------------------
 
+    print("")
+    print("test start")
+
+    # 테스트 데이터 처리
+    num_test_images = 93
+    test_data = create_test_data(num_test_images)
+    print("test_data : ",test_data.shape)
+
+    # 테스트 이미지 번호 입력 받기
+    # test_image_idx = int(input("test 입력 영상 번호 입력(0~92): "))
+
+    # 입력영상 - 평균영상
+    diff_test = store_difference_images(test_data, mean_image)
+    print("diff_test : ",diff_test.shape)
+
+    # 특징값 = 차 테스트 영상 x 변환행렬
+    test_feature_vectors = calculate_feature_vectors(diff_test, V)
+    print("test_feature_vectors : ",test_feature_vectors.shape)
+
+    # 테스트 특징 백터와 가장 가까운 학습 특징 벡터 찾기
+    test_image_idx = int(input("test 이미지 인덱스 입력(0~92): "))
+    test_feature_vector = test_feature_vectors[test_image_idx]
+    closest_train_image_idx, min_distance = find_closest_train_image(test_feature_vector, feature_vectors)
+    print("가장 가까운 이미지 인덱스:", closest_train_image_idx, "거리:", min_distance)
+
+    # 테스트 결과 출력
+    show_side_by_side(test_data[test_image_idx], train_data[closest_train_image_idx],
+                      "Test #{}".format(test_image_idx), "Train #{}".format(closest_train_image_idx))
 
 
 if __name__ == "__main__":
