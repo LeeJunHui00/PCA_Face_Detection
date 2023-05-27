@@ -191,13 +191,44 @@ def find_closest_train_image(test_feature_vector, train_feature_vectors):
     min_distance = distances[closest_image_idx]         # 3. 가장 작은 거리 값을 가져옵니다.
     return closest_image_idx, min_distance              # 4. 가장 작은 거리 값, 특징 벡터의 인덱스 반환
 
-def show_side_by_side(left_img, right_img, left_label, right_label, window_name='Result'):
-    left_reshape_img = np.reshape(left_img, (150, 120))
-    right_reshape_img = np.reshape(right_img, (150, 120))
+# def show_side_by_side(left_img, right_img, left_label, right_label, window_name='Result'):
+#     left_reshape_img = np.reshape(left_img, (150, 120))
+#     right_reshape_img = np.reshape(right_img, (150, 120))
+#
+#     # 원본 이미지의 크기를 각각 3배로 늘립니다.
+#     resized_left_img = cv2.resize(left_reshape_img, (120 * 3, 150 * 3))
+#     resized_right_img = cv2.resize(right_reshape_img, (120 * 3, 150 * 3))
+#
+#     # 두 이미지를 가로로 연결
+#     combined_img = np.hstack((resized_left_img, resized_right_img))
+#
+#     # 각 이미지에 레이블을 추가
+#     font = cv2.FONT_HERSHEY_SIMPLEX
+#     font_scale = 1.5
+#     font_color = (255, 255, 255)
+#
+#     # 글씨 추가하기
+#     cv2.putText(combined_img, left_label, (10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
+#     cv2.putText(combined_img, right_label, (120*3 + 10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
+#
+#     # 연결된 이미지를 출력
+#     cv2.imshow(window_name, combined_img)
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()
+
+def show_side_by_side(test_image_idx, closest_train_image_idx, left_label, right_label, window_name='Result'):
+
+    fname_left = f"face_img/test/test{test_image_idx:03d}.jpg"           # 310개의 train_xxx.jpg 라벨링하기
+    image_left = cv2.imread(fname_left, cv2.IMREAD_COLOR)                 # 컬러 모드로 이미지 파일 읽기
+    left_resized_image = cv2.resize(image_left, (120, 150), cv2.INTER_LINEAR)               # 120x150 사이즈로 픽셀 조정
+
+    fname_right = f"face_img/train/train{closest_train_image_idx:03d}.jpg"              # 1. 310개의 train_xxx.jpg 라벨링하기
+    image_right = cv2.imread(fname_right, cv2.IMREAD_COLOR)                 # 2. 컬러 모드로 이미지 파일 읽기
+    right_resized_image = cv2.resize(image_right, (120, 150), cv2.INTER_LINEAR)               # 3. 120x150 사이즈로 픽셀 조정
 
     # 원본 이미지의 크기를 각각 3배로 늘립니다.
-    resized_left_img = cv2.resize(left_reshape_img, (120 * 3, 150 * 3))
-    resized_right_img = cv2.resize(right_reshape_img, (120 * 3, 150 * 3))
+    resized_left_img = cv2.resize(left_resized_image, (120 * 3, 150 * 3))
+    resized_right_img = cv2.resize(right_resized_image, (120 * 3, 150 * 3))
 
     # 두 이미지를 가로로 연결
     combined_img = np.hstack((resized_left_img, resized_right_img))
@@ -302,14 +333,15 @@ def main():
     print("test_feature_vectors : ",test_feature_vectors.shape)
 
     # 테스트 특징 백터와 가장 가까운 학습 특징 벡터 찾기
-    test_image_idx = int(input("test 이미지 인덱스 입력(0~92): "))
+    test_image_idx = int(input("test 입력 영상 번호 입력(0~92) :  "))
+
     test_feature_vector = test_feature_vectors[test_image_idx]
     closest_train_image_idx, min_distance = find_closest_train_image(test_feature_vector, feature_vectors)
     print("가장 가까운 이미지 인덱스:", closest_train_image_idx, "거리:", min_distance)
 
-    # 테스트 결과 출력
-    show_side_by_side(test_data[test_image_idx], train_data[closest_train_image_idx],
+    show_side_by_side(test_image_idx, closest_train_image_idx,
                       "Test #{}".format(test_image_idx), "Train #{}".format(closest_train_image_idx))
+
 
 if __name__ == "__main__":
     main()
