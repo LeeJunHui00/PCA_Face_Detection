@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
+# 학습 이미지 데이터를 전처리 하는 함수
 def preprocessing(train_no):
     fname = f"face_img/train/train{train_no:03d}.jpg"                   # 310개의 train_xxx.jpg 라벨링하기
     image = cv2.imread(fname, cv2.IMREAD_COLOR)                         # 컬러 모드로 이미지 파일 읽기
@@ -77,9 +77,9 @@ def covariance_matrix(flat_diff):
 # 공분산 행렬에서 고유값과 고유벡터를 계산한 후, 그 결과를 반환
 def eigenvectors_and_eigenvalues(cov_matrix):
     eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)      # 1. 주어진 공분산 행렬에서 고유값과 고유벡터를 계산
-    eigenvalues = eigenvalues.real
-    eigenvectors = eigenvectors.real
-    return eigenvalues, eigenvectors                            # 2. 계산된 고유값과 고유벡터를 반환
+    eigenvalues = eigenvalues.real                             # 2. 고유값의 허수부를 실수로 변환
+    eigenvectors = eigenvectors.real                           # 3. 고유벡터의 허수부를 실수로 변환
+    return eigenvalues, eigenvectors                           # 4. 계산된 고유값과 고유벡터를 반환
 
 # 원래 이미지 공간에서의 고유벡터를 계산하기 위해
 # 전치된 차이 이미지 배열(train_flat_diff)와 M x M 고유벡터(eigenvectors_MxM)의 행렬곱을 수행한 후, 그 결과를 반환
@@ -88,7 +88,7 @@ def compute_eigenvectors_in_original_space(train_flat_diff, eigenvectors_MxM):
     return eigenvectors_NxM                                 # 2. 계산된 고유벡터를 반환
 
 #  원래 이미지 공간에서의 고유벡터(eigenvectors_NxM)를 사용하여 고유 얼굴을 생성하고 출력
-def display_eigenfaces(eigenvectors_NxM, save=False):
+def display_eigenfaces(eigenvectors_NxM):
     num_eigenfaces = eigenvectors_NxM.shape[1]                      # 1. 원래 이미지 공간에서의 고유벡터 배열에서 고유 얼굴 개수 계산
 
     # 2. 각 고유 얼굴 이미지를 출력
@@ -117,6 +117,8 @@ def graph_plot(sorted_eigenvalues):
     plt.xlim(0, 400)    # 4. x축의 범위 설정
     plt.grid(True)      # 5. 그리드 표시
     plt.show()          # 6. 그래프 출력
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 # 정렬된 고유값과 원래 이미지 공간에서의 고유벡터을 사용하여 주성분을 찾고
 # 목표 설명 분산(K)에 맞게 고유값과 고유벡터를 선택
@@ -148,6 +150,7 @@ def calculate_feature_vectors(diff, V):
 
 # test 단계 --------------------------------------------
 
+# 테스트 이미지 데이터를 전처리 하는 함수
 def preprocessing_test(test_no):
     fname = f"face_img/test/test{test_no:03d}.jpg"                  # 1. 310개의 train_xxx.jpg 라벨링하기
     image = cv2.imread(fname, cv2.IMREAD_COLOR)                     # 2. 컬러 모드로 이미지 파일 읽기
@@ -169,14 +172,6 @@ def create_test_data(num_images):
         test_data[test_no] = image_vector                       # 2.3 변환된 이미지 벡터를 테스트 데이터 배열에 저장
     return test_data                                            # 3. 완성된 테스트 데이터 배열 반환
 
-# 이미지 배열(img)을 원래 형태(150x120)로 변환한 후, 그 변환된 이미지를 화면에 출력
-def display_image(img):
-    img_with_label = np.reshape(img, (150, 120))    # 1. 주어진 이미지 배열을 원래 형태(150x120)로 변환
-    cv2.imshow("display_image",img_with_label)      # 2. 변환된 이미지를 화면에 출력
-
-# 두 벡터(v1, v2) 사이의 유클리디안 거리를 계산한 후, 그 결과를 반환
-def euclidean_distance(v1, v2):
-    return np.linalg.norm(v1 - v2)  # 1. 주어진 두 벡터(v1, v2) 사이의 유클리디안 거리를 계산하고 반환
 
 # 테스트 이미지의 특징 벡터와 학습 이미지의 특징 벡터를 입력으로 받아 가장 가까운 학습 이미지를 찾는 기능
 def find_closest_train_image(test_feature_vector, train_feature_vectors):
@@ -253,6 +248,7 @@ def main():
     # 그래프 출력
     graph_plot(sorted_eigenvalues)
 
+    print("train loading...")
     # N 차원 고유 백터
     eigenvectors_NxM = compute_eigenvectors_in_original_space(train_flat_diff, eigenvectors)
 
@@ -294,7 +290,6 @@ def main():
                       "Test #{}".format(test_image_idx), "Train #{}".format(closest_train_image_idx))
 
     print("test end")
-
 
 if __name__ == "__main__":
     main()
