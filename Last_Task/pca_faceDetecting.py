@@ -4,15 +4,13 @@ import matplotlib.pyplot as plt
 import os
 
 def preprocessing(train_no):
-    fname = f"face_img/train/train{train_no:03d}.jpg"           # 310개의 train_xxx.jpg 라벨링하기
-    image = cv2.imread(fname, cv2.IMREAD_COLOR)                 # 컬러 모드로 이미지 파일 읽기
-    resized_image = cv2.resize(image, (120, 150), cv2.INTER_LINEAR)               # 120x150 사이즈로 픽셀 조정
-    gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)# 그레이 스케일로 변환
-    histeq_image = cv2.equalizeHist(gray_image)
-    # cv2.imshow("adjusted_image", adjusted_image)
-    # cv2.waitKey(0)
-    float_image = histeq_image.astype(np.float32)                 # 데이터 유형을 float32로 변환
-    normalized_image = float_image / 255                        # 픽셀 값을 나누어 정규화
+    fname = f"face_img/train/train{train_no:03d}.jpg"                   # 310개의 train_xxx.jpg 라벨링하기
+    image = cv2.imread(fname, cv2.IMREAD_COLOR)                         # 컬러 모드로 이미지 파일 읽기
+    resized_image = cv2.resize(image, (120, 150), cv2.INTER_LINEAR)     # 120x150 사이즈로 픽셀 조정
+    gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)        # 그레이 스케일로 변환
+    histeq_image = cv2.equalizeHist(gray_image)                         # 히스토 평탄화 변환
+    float_image = histeq_image.astype(np.float32)                       # 데이터 유형을 float32로 변환
+    normalized_image = float_image / 255                                # 픽셀 값을 나누어 정규화
     return normalized_image
 
 # 이미지 데이터를 전처리한 후 일차원 배열로 변환하여 훈련 데이터 세트를 생성하는 함수
@@ -151,15 +149,13 @@ def calculate_feature_vectors(diff, V):
 # test 단계 --------------------------------------------
 
 def preprocessing_test(test_no):
-    fname = f"face_img/test/test{test_no:03d}.jpg"              # 1. 310개의 train_xxx.jpg 라벨링하기
-    image = cv2.imread(fname, cv2.IMREAD_COLOR)                 # 2. 컬러 모드로 이미지 파일 읽기
-    resized_image = cv2.resize(image, (120, 150), cv2.INTER_LINEAR)               # 3. 120x150 사이즈로 픽셀 조정
-    gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)# 4. 그레이 스케일로 변환
-    histeq_image = cv2.equalizeHist(gray_image)
-    # cv2.imshow("adjusted_image", adjusted_image)
-    # cv2.waitKey(0)
-    float_image = histeq_image.astype(np.float32)                 # 데이터 유형을 float32로 변환
-    normalized_image = float_image / 255                        # 6. 픽셀 값을 나누어 정규화
+    fname = f"face_img/test/test{test_no:03d}.jpg"                  # 1. 310개의 train_xxx.jpg 라벨링하기
+    image = cv2.imread(fname, cv2.IMREAD_COLOR)                     # 2. 컬러 모드로 이미지 파일 읽기
+    resized_image = cv2.resize(image, (120, 150), cv2.INTER_LINEAR) # 3. 120x150 사이즈로 픽셀 조정
+    gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)    # 4. 그레이 스케일로 변환
+    histeq_image = cv2.equalizeHist(gray_image)                     # 5. 히스토 평탄화 변환
+    float_image = histeq_image.astype(np.float32)                   # 데이터 유형을 float32로 변환
+    normalized_image = float_image / 255                            # 6. 픽셀 값을 나누어 정규화
     return normalized_image
 
 # 테스트 이미지 개수(num_images)를 사용하여 전처리된 테스트 데이터를 생성하고, 그 결과를 반환
@@ -191,40 +187,15 @@ def find_closest_train_image(test_feature_vector, train_feature_vectors):
     min_distance = distances[closest_image_idx]         # 3. 가장 작은 거리 값을 가져옵니다.
     return closest_image_idx, min_distance              # 4. 가장 작은 거리 값, 특징 벡터의 인덱스 반환
 
-# def show_side_by_side(left_img, right_img, left_label, right_label, window_name='Result'):
-#     left_reshape_img = np.reshape(left_img, (150, 120))
-#     right_reshape_img = np.reshape(right_img, (150, 120))
-#
-#     # 원본 이미지의 크기를 각각 3배로 늘립니다.
-#     resized_left_img = cv2.resize(left_reshape_img, (120 * 3, 150 * 3))
-#     resized_right_img = cv2.resize(right_reshape_img, (120 * 3, 150 * 3))
-#
-#     # 두 이미지를 가로로 연결
-#     combined_img = np.hstack((resized_left_img, resized_right_img))
-#
-#     # 각 이미지에 레이블을 추가
-#     font = cv2.FONT_HERSHEY_SIMPLEX
-#     font_scale = 1.5
-#     font_color = (255, 255, 255)
-#
-#     # 글씨 추가하기
-#     cv2.putText(combined_img, left_label, (10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
-#     cv2.putText(combined_img, right_label, (120*3 + 10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
-#
-#     # 연결된 이미지를 출력
-#     cv2.imshow(window_name, combined_img)
-#     cv2.waitKey(0)
-#     cv2.destroyAllWindows()
-
 def show_side_by_side(test_image_idx, closest_train_image_idx, left_label, right_label, window_name='Result'):
 
-    fname_left = f"face_img/test/test{test_image_idx:03d}.jpg"           # 310개의 train_xxx.jpg 라벨링하기
-    image_left = cv2.imread(fname_left, cv2.IMREAD_COLOR)                 # 컬러 모드로 이미지 파일 읽기
-    left_resized_image = cv2.resize(image_left, (120, 150), cv2.INTER_LINEAR)               # 120x150 사이즈로 픽셀 조정
+    fname_left = f"face_img/test/test{test_image_idx:03d}.jpg"                  # test[test_image_idx].jpg 파일 불러오기
+    image_left = cv2.imread(fname_left, cv2.IMREAD_COLOR)                       # 컬러 모드로 이미지 파일 읽기
+    left_resized_image = cv2.resize(image_left, (120, 150), cv2.INTER_LINEAR)   # 120x150 사이즈로 픽셀 조정
 
-    fname_right = f"face_img/train/train{closest_train_image_idx:03d}.jpg"              # 1. 310개의 train_xxx.jpg 라벨링하기
-    image_right = cv2.imread(fname_right, cv2.IMREAD_COLOR)                 # 2. 컬러 모드로 이미지 파일 읽기
-    right_resized_image = cv2.resize(image_right, (120, 150), cv2.INTER_LINEAR)               # 3. 120x150 사이즈로 픽셀 조정
+    fname_right = f"face_img/train/train{closest_train_image_idx:03d}.jpg"      # train[closest_train_image_idx].jpg 파일 불러오기
+    image_right = cv2.imread(fname_right, cv2.IMREAD_COLOR)                     # 컬러 모드로 이미지 파일 읽기
+    right_resized_image = cv2.resize(image_right, (120, 150), cv2.INTER_LINEAR) # 120x150 사이즈로 픽셀 조정
 
     # 원본 이미지의 크기를 각각 3배로 늘립니다.
     resized_left_img = cv2.resize(left_resized_image, (120 * 3, 150 * 3))
@@ -252,95 +223,77 @@ def main():
     # 얼굴 데이터 처리
     num_images = 310
     train_data = create_train_data(num_images)
-    print("train_data : ",train_data.shape)
 
     # 평균 얼굴 구하기
     mean_image = faces_avg(train_data)
-    print("mean_image : ", mean_image.shape)
+
     # 평균 얼굴 출력 함수
     faces_avg_show(mean_image)
 
     # 차 백터 구하는 함수
     differences = store_difference_images(train_data, mean_image)
-    print("difference_images : ", differences.shape)
+
     # 차 백터 출력 함수
     #show_difference_images(train_data, mean_image)
 
     # 벡터 X 구하기 18000x310
     train_flat_diff = flat_difference_vectors(differences)
-    print("train_flat_diff : ", train_flat_diff.shape)
 
     # 공분산 행렬 구하기 310x310
     cov_matrix = covariance_matrix(train_flat_diff.T)
-    print("cov_matirx : ",cov_matrix.shape)
 
     # 공분산 행렬의 고유백터와 고유값 구하기
     eigenvalues, eigenvectors = eigenvectors_and_eigenvalues(cov_matrix)
-    print("eigenvalues.shape : ", eigenvalues.shape)
-    print("eigenvectors.shape : ", eigenvectors.shape)
 
     # 내림차순으로 출력
     sorted_indices = np.argsort(eigenvalues)[::-1]
     sorted_eigenvalues = eigenvalues[sorted_indices]
     sorted_eigenvectors = eigenvectors[:, sorted_indices]
 
-    # print("sorted_eigenvectors", sorted_eigenvectors)
-    # print("sorted_eigenvalues", sorted_eigenvalues)
-
+    # 그래프 출력
     graph_plot(sorted_eigenvalues)
 
     # N 차원 고유 백터
     eigenvectors_NxM = compute_eigenvectors_in_original_space(train_flat_diff, eigenvectors)
-    print("eigenvectors_NxM.shape : ", eigenvectors_NxM.shape)
+
     # test : 고유 얼굴들 출력
     #display_eigenfaces(eigenvectors_NxM)
 
     # K = 0.95 고유백터 선택
     num_principal_components, principal_eigenvectors = find_principal_components(sorted_eigenvalues, eigenvectors_NxM, K=0.88)
-    print("Num. Principal Components:" ,num_principal_components)
-    print("principal_eigenvectors.shape : ", principal_eigenvectors.shape)
 
     # 주요 고유 벡터를 사용하여 변환 행렬을 만듭니다.
     V = calculate_transformation_matrix(principal_eigenvectors)
-    print("V shape:", V.shape)
 
     # 변환행렬 V와 전체 평균 영상의 차를 곱하여 특징백터를 구한다.
     feature_vectors = calculate_feature_vectors(differences, V)
-    print("Feature Vectors shape:", feature_vectors.shape)
 
     print("train end")
     print("")
 
     # test 단계 --------------------------------------------
-
-    print("")
     print("test start")
 
     # 테스트 데이터 처리
     num_test_images = 93
     test_data = create_test_data(num_test_images)
-    print("test_data : ",test_data.shape)
-
-    # 테스트 이미지 번호 입력 받기
-    # test_image_idx = int(input("test 입력 영상 번호 입력(0~92): "))
 
     # 입력영상 - 평균영상
     diff_test = store_difference_images(test_data, mean_image)
-    print("diff_test : ",diff_test.shape)
 
     # 특징값 = 차 테스트 영상 x 변환행렬
     test_feature_vectors = calculate_feature_vectors(diff_test, V)
-    print("test_feature_vectors : ",test_feature_vectors.shape)
 
     # 테스트 특징 백터와 가장 가까운 학습 특징 벡터 찾기
     test_image_idx = int(input("test 입력 영상 번호 입력(0~92) :  "))
-
     test_feature_vector = test_feature_vectors[test_image_idx]
     closest_train_image_idx, min_distance = find_closest_train_image(test_feature_vector, feature_vectors)
-    print("가장 가까운 이미지 인덱스:", closest_train_image_idx, "거리:", min_distance)
 
+    # 테스트 이미지와 가장 유사한 학습 이미지 출력
     show_side_by_side(test_image_idx, closest_train_image_idx,
                       "Test #{}".format(test_image_idx), "Train #{}".format(closest_train_image_idx))
+
+    print("test end")
 
 
 if __name__ == "__main__":
