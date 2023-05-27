@@ -191,38 +191,25 @@ def find_closest_train_image(test_feature_vector, train_feature_vectors):
     min_distance = distances[closest_image_idx]         # 3. 가장 작은 거리 값을 가져옵니다.
     return closest_image_idx, min_distance              # 4. 가장 작은 거리 값, 특징 벡터의 인덱스 반환
 
-def show_labeled_image(image, label, window_name='Image'):
-    # 1. OpenCV에서 사용할 글꼴, 스케일, 글꼴 색상 등을 설정합니다.
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
-    font_color = (255, 255, 255)
-    img_with_label = np.reshape(image, (150, 120))  # 2. 주어진 이미지를 원래 형태(150x120)로 변환합니다.
-    print("image.shape : ", img_with_label.shape)
-
-    # 3. 레이블을 이미지에 추가하기 위해 OpenCV의 'putText' 함수를 사용합니다.
-    cv2.putText(img_with_label, label, (10, 40), font, font_scale, font_color, 2, cv2.LINE_AA)
-    # 4. 레이블이 추가된 이미지를 화면에 출력합니다.
-    cv2.imshow(window_name, img_with_label)
-    cv2.waitKey(0)
-
-def display_test_result(test_number, test_image, recognized_face, test_label, recognized_label):
-    show_labeled_image(test_image, test_label, 'Test #' + str(test_number))
-    show_labeled_image(recognized_face, recognized_label, 'Train')
-
 def show_side_by_side(left_img, right_img, left_label, right_label, window_name='Result'):
     left_reshape_img = np.reshape(left_img, (150, 120))
     right_reshape_img = np.reshape(right_img, (150, 120))
 
+    # 원본 이미지의 크기를 각각 3배로 늘립니다.
+    resized_left_img = cv2.resize(left_reshape_img, (120 * 3, 150 * 3))
+    resized_right_img = cv2.resize(right_reshape_img, (120 * 3, 150 * 3))
+
     # 두 이미지를 가로로 연결
-    combined_img = np.hstack((left_reshape_img, right_reshape_img))
+    combined_img = np.hstack((resized_left_img, resized_right_img))
 
     # 각 이미지에 레이블을 추가
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.5
+    font_scale = 1.5
     font_color = (255, 255, 255)
 
+    # 글씨 추가하기
     cv2.putText(combined_img, left_label, (10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
-    cv2.putText(combined_img, right_label, (120 + 10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
+    cv2.putText(combined_img, right_label, (120*3 + 10, 40), font, font_scale, font_color, 1, cv2.LINE_AA)
 
     # 연결된 이미지를 출력
     cv2.imshow(window_name, combined_img)
@@ -315,17 +302,14 @@ def main():
     print("test_feature_vectors : ",test_feature_vectors.shape)
 
     # 테스트 특징 백터와 가장 가까운 학습 특징 벡터 찾기
-    # test_image_idx = int(input("test 이미지 인덱스 입력(0~92): "))
+    test_image_idx = int(input("test 이미지 인덱스 입력(0~92): "))
+    test_feature_vector = test_feature_vectors[test_image_idx]
+    closest_train_image_idx, min_distance = find_closest_train_image(test_feature_vector, feature_vectors)
+    print("가장 가까운 이미지 인덱스:", closest_train_image_idx, "거리:", min_distance)
 
-    for test_image_idx in range(92):
-
-        test_feature_vector = test_feature_vectors[test_image_idx]
-        closest_train_image_idx, min_distance = find_closest_train_image(test_feature_vector, feature_vectors)
-        print("가장 가까운 이미지 인덱스:", closest_train_image_idx, "거리:", min_distance)
-
-        # 테스트 결과 출력
-        show_side_by_side(test_data[test_image_idx], train_data[closest_train_image_idx],
-                          "Test #{}".format(test_image_idx), "Train #{}".format(closest_train_image_idx))
+    # 테스트 결과 출력
+    show_side_by_side(test_data[test_image_idx], train_data[closest_train_image_idx],
+                      "Test #{}".format(test_image_idx), "Train #{}".format(closest_train_image_idx))
 
 if __name__ == "__main__":
     main()
