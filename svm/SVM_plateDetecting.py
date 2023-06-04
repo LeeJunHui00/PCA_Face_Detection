@@ -10,10 +10,12 @@ def preprocessing(car_no):
     return gray_img, image
 
 # 슬라이딩 윈도우 탐지 함수
-def sliding_window_detection(gray_img, win_size, step_size, svm):
+def sliding_window_detection(gray_img, win_size, step_size, svm, y_start_ratio):
     detections = []
+    y_start = int(gray_img.shape[0] * y_start_ratio)        # 영상 아래 부분만 검색
+
     # 높이와 너비를 순회하여 창 이동시키기
-    for y in range(0, gray_img.shape[0] - win_size[1], step_size):
+    for y in range(y_start, gray_img.shape[0] - win_size[1], step_size):
         for x in range(0, gray_img.shape[1] - win_size[0], step_size):
             # 현재 창의 이미지 추출
             win = gray_img[y:y + win_size[1], x:x + win_size[0]]
@@ -52,6 +54,9 @@ def main():
     # 값이 작을수록 높이와 너비를 더 세밀하게 탐지함, 대신 느려짐
     step_size = 4
 
+    # 영상의 반틈 아래 부분만 검색
+    y_start_ratio = 0.5
+
     for car_no in img_idx:
         gray_img, image = preprocessing(car_no)
         if image is None:
@@ -59,7 +64,7 @@ def main():
 
         # 각 슬라이딩 창 크기에 대해 이미지에서 객체 검출
         for win_size in sliding_sizes:
-            rectangles = sliding_window_detection(gray_img, win_size, step_size, svm)
+            rectangles = sliding_window_detection(gray_img, win_size, step_size, svm, y_start_ratio)
 
             # 검출된 객체들을 화면에 표시
             for x, y, w, h in rectangles:
